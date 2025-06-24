@@ -11,6 +11,8 @@
 
 #include "Tetris.h"
 #include <iostream>
+// This line should only be uncommented for the release version
+#pragma comment(linker, "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
 
  /**
   * @brief Main entry point for the Tetris game

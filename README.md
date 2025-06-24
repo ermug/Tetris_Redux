@@ -299,9 +299,7 @@ g++ -std=c++17 --version
 - **Master Rotation**: Learn piece rotation patterns for tight spaces
 - **Speed Practice**: Start slow and gradually increase difficulty
 
-## 🤝 Contributing
-
-Contributions are welcome! Here are some ideas:
+## 🔧 Customization
 
 ### Piece Colors
 Edit the `colors` vector in `Tetris.cpp`:
@@ -330,6 +328,28 @@ Change constants in `Tetris.h`:
 static const int BOARD_WIDTH = 10;   // Standard: 10
 static const int BOARD_HEIGHT = 20;  // Standard: 20
 ```
+
+## 🤝 Contributing
+
+Contributions are welcome! Here are some ideas:
+
+### Easy Additions
+- [ ] Next piece preview
+- [ ] Pause functionality
+- [ ] High score saving
+- [ ] Sound effects
+
+### Medium Features
+- [ ] Ghost piece (shadow)
+- [ ] Hold piece function
+- [ ] Particle effects for line clears
+- [ ] Multiple game modes
+
+### Advanced Features
+- [ ] AI opponent
+- [ ] Network multiplayer
+- [ ] Custom piece sets
+- [ ] Replay system
 
 ### Development Setup
 ```bash
@@ -396,3 +416,5 @@ This project is open source and available under the [MIT License](LICENSE).
 **Happy Gaming! 🎮✨**
 
 *Built with ❤️ using C++ and SFML*
+
+**🎯 [Download Now](../../releases/latest) | 🛠️ Build From Source | 🐛 Report Issues**
