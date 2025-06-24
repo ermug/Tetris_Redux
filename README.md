@@ -299,7 +299,9 @@ g++ -std=c++17 --version
 - **Master Rotation**: Learn piece rotation patterns for tight spaces
 - **Speed Practice**: Start slow and gradually increase difficulty
 
-## 🔧 Customization
+## 🤝 Contributing
+
+Contributions are welcome! Here are some ideas:
 
 ### Piece Colors
 Edit the `colors` vector in `Tetris.cpp`:
@@ -394,5 +396,3 @@ This project is open source and available under the [MIT License](LICENSE).
 **Happy Gaming! 🎮✨**
 
 *Built with ❤️ using C++ and SFML*
-
-**🎯 [Download Now](../../releases/latest) | 🛠️ Build From Source | 🐛 Report Issues**
