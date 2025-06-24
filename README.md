@@ -329,28 +329,6 @@ static const int BOARD_WIDTH = 10;   // Standard: 10
 static const int BOARD_HEIGHT = 20;  // Standard: 20
 ```
 
-## 🤝 Contributing
-
-Contributions are welcome! Here are some ideas:
-
-### Easy Additions
-- [ ] Next piece preview
-- [ ] Pause functionality
-- [ ] High score saving
-- [ ] Sound effects
-
-### Medium Features
-- [ ] Ghost piece (shadow)
-- [ ] Hold piece function
-- [ ] Particle effects for line clears
-- [ ] Multiple game modes
-
-### Advanced Features
-- [ ] AI opponent
-- [ ] Network multiplayer
-- [ ] Custom piece sets
-- [ ] Replay system
-
 ### Development Setup
 ```bash
 # Fork the repository
@@ -394,6 +372,7 @@ class Tetris {
 ## 📦 Release Notes
 
 ### Latest Release Features
+- ✅ **Added Sound Effects**: Now 50% Less Boring!
 - ✅ **No Installation Required**: Just download and play!
 - ✅ **All Dependencies Included**: SFML libraries bundled
 - ✅ **Font Included**: No need to find arial.ttf
