@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <vector>
 #include <random>
 #include <chrono>
@@ -8,8 +9,8 @@
 /**
  * @brief Main Tetris game class
  *
- * This class handles all game logic, rendering, and input for a complete Tetris implementation.
- * It manages the game board, pieces, scoring, and user interface.
+ * This class handles all game logic, rendering, input, and audio for a complete Tetris implementation.
+ * It manages the game board, pieces, scoring, user interface, and sound effects.
  */
 class Tetris {
 private:
@@ -51,6 +52,23 @@ private:
     sf::Text levelText;                        ///< Level display text
     sf::Text gameOverText;                     ///< Game over message text
 
+    // Audio system
+    sf::SoundBuffer moveBuffer;                ///< Sound buffer for piece movement
+    sf::SoundBuffer rotateBuffer;              ///< Sound buffer for piece rotation
+    sf::SoundBuffer dropBuffer;                ///< Sound buffer for piece drop/landing
+    sf::SoundBuffer lineClearBuffer;           ///< Sound buffer for line clearing
+    sf::SoundBuffer gameOverBuffer;            ///< Sound buffer for game over
+    sf::SoundBuffer levelUpBuffer;             ///< Sound buffer for level up
+
+    sf::Sound moveSound;                       ///< Sound object for movement
+    sf::Sound rotateSound;                     ///< Sound object for rotation
+    sf::Sound dropSound;                       ///< Sound object for dropping
+    sf::Sound lineClearSound;                  ///< Sound object for line clearing
+    sf::Sound gameOverSound;                   ///< Sound object for game over
+    sf::Sound levelUpSound;                    ///< Sound object for level up
+
+    bool soundEnabled;                         ///< Flag to enable/disable sound effects
+
     // Random number generation
     std::mt19937 rng;                          ///< Random number generator
     std::uniform_int_distribution<int> pieceDist; ///< Distribution for selecting random pieces
@@ -70,6 +88,31 @@ public:
     void run();
 
 private:
+    /**
+     * @brief Load all sound effect files
+     *
+     * Attempts to load sound files from multiple possible locations.
+     * Sets soundEnabled flag based on success of loading sounds.
+     */
+    void loadSounds();
+
+    /**
+     * @brief Generate simple sound effects programmatically
+     *
+     * Creates basic sound effects if audio files cannot be loaded.
+     * This ensures the game has some audio feedback even without external files.
+     */
+    void generateSounds();
+
+    /**
+     * @brief Play a sound effect if audio is enabled
+     *
+     * @param sound The sound object to play
+     *
+     * Helper function to play sounds only when audio is enabled.
+     */
+    void playSound(sf::Sound& sound);
+
     /**
      * @brief Initialize all UI text elements
      *
@@ -111,6 +154,7 @@ private:
      *
      * Scans the board for completely filled rows, removes them,
      * adds new empty rows at the top, and updates score and level.
+     * Also plays appropriate sound effects for line clearing and level up.
      */
     void clearLines();
 
@@ -128,7 +172,7 @@ private:
      * @brief Handle all keyboard input and window events
      *
      * Processes player input for piece movement, rotation, dropping,
-     * and game restart. Also handles window close events.
+     * game restart, and sound toggle. Also handles window close events.
      */
     void handleInput();
 

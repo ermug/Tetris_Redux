@@ -1,5 +1,6 @@
 #include "Tetris.h"
 #include <iostream>
+#include <cmath>
 
 /**
  * Constructor - Initialize the game with default values and setup
@@ -14,7 +15,8 @@ Tetris::Tetris() :
     linesCleared(0),
     gameOver(false),
     dropTimer(0),
-    dropInterval(500.0f)  // Initial drop interval of 500ms
+    dropInterval(500.0f),  // Initial drop interval of 500ms
+    soundEnabled(true)     // Enable sound by default
 {
     // Set frame rate limit for smooth gameplay
     window.setFramerateLimit(60);
@@ -102,9 +104,181 @@ Tetris::Tetris() :
         std::cout << "To fix this, place arial.ttf in the game directory or fonts/ subdirectory." << std::endl;
     }
 
+    // Initialize audio system
+    loadSounds();
+
     // Initialize UI elements and spawn first piece
     setupText();
     spawnNewPiece();
+}
+
+/**
+ * Load all sound effect files
+ */
+void Tetris::loadSounds() {
+    // Try to load sound files from multiple locations
+    std::vector<std::string> soundPaths = {
+        "",                     // Current directory
+        "sounds/",              // sounds subdirectory
+        "assets/sounds/",       // assets/sounds subdirectory
+        "audio/"                // audio subdirectory
+    };
+
+    std::vector<std::string> soundFiles = {
+        "move.wav", "rotate.wav", "drop.wav", "line_clear.wav", "game_over.wav", "level_up.wav"
+    };
+
+    bool anyLoaded = false;
+
+    // Try to load each sound file
+    for (const auto& basePath : soundPaths) {
+        if (moveBuffer.loadFromFile(basePath + "move.wav")) {
+            moveSound.setBuffer(moveBuffer);
+            anyLoaded = true;
+            std::cout << "Loaded move sound from: " << basePath << "move.wav" << std::endl;
+            break;
+        }
+    }
+
+    for (const auto& basePath : soundPaths) {
+        if (rotateBuffer.loadFromFile(basePath + "rotate.wav")) {
+            rotateSound.setBuffer(rotateBuffer);
+            anyLoaded = true;
+            std::cout << "Loaded rotate sound from: " << basePath << "rotate.wav" << std::endl;
+            break;
+        }
+    }
+
+    for (const auto& basePath : soundPaths) {
+        if (dropBuffer.loadFromFile(basePath + "drop.wav")) {
+            dropSound.setBuffer(dropBuffer);
+            anyLoaded = true;
+            std::cout << "Loaded drop sound from: " << basePath << "drop.wav" << std::endl;
+            break;
+        }
+    }
+
+    for (const auto& basePath : soundPaths) {
+        if (lineClearBuffer.loadFromFile(basePath + "line_clear.wav")) {
+            lineClearSound.setBuffer(lineClearBuffer);
+            anyLoaded = true;
+            std::cout << "Loaded line clear sound from: " << basePath << "line_clear.wav" << std::endl;
+            break;
+        }
+    }
+
+    for (const auto& basePath : soundPaths) {
+        if (gameOverBuffer.loadFromFile(basePath + "game_over.wav")) {
+            gameOverSound.setBuffer(gameOverBuffer);
+            anyLoaded = true;
+            std::cout << "Loaded game over sound from: " << basePath << "game_over.wav" << std::endl;
+            break;
+        }
+    }
+
+    for (const auto& basePath : soundPaths) {
+        if (levelUpBuffer.loadFromFile(basePath + "level_up.wav")) {
+            levelUpSound.setBuffer(levelUpBuffer);
+            anyLoaded = true;
+            std::cout << "Loaded level up sound from: " << basePath << "level_up.wav" << std::endl;
+            break;
+        }
+    }
+
+    if (!anyLoaded) {
+        std::cout << "No sound files found. Generating simple sound effects..." << std::endl;
+        generateSounds();
+    }
+}
+
+/**
+ * Generate simple sound effects programmatically
+ */
+void Tetris::generateSounds() {
+    const unsigned SAMPLE_RATE = 44100;
+    const unsigned SAMPLES = SAMPLE_RATE / 4; // 0.25 second sounds
+
+    // Generate move sound (short beep)
+    std::vector<sf::Int16> moveSamples(SAMPLES);
+    for (unsigned i = 0; i < SAMPLES; i++) {
+        float time = static_cast<float>(i) / SAMPLE_RATE;
+        float amplitude = 3000.0f * std::exp(-time * 10.0f); // Decaying amplitude
+        moveSamples[i] = static_cast<sf::Int16>(amplitude * std::sin(2 * 3.1415 * 800 * time));
+    }
+    moveBuffer.loadFromSamples(moveSamples.data(), moveSamples.size(), 1, SAMPLE_RATE);
+    moveSound.setBuffer(moveBuffer);
+
+    // Generate rotate sound (higher pitch beep)
+    std::vector<sf::Int16> rotateSamples(SAMPLES);
+    for (unsigned i = 0; i < SAMPLES; i++) {
+        float time = static_cast<float>(i) / SAMPLE_RATE;
+        float amplitude = 3000.0f * std::exp(-time * 8.0f);
+        rotateSamples[i] = static_cast<sf::Int16>(amplitude * std::sin(2 * 3.1415 * 1200 * time));
+    }
+    rotateBuffer.loadFromSamples(rotateSamples.data(), rotateSamples.size(), 1, SAMPLE_RATE);
+    rotateSound.setBuffer(rotateBuffer);
+
+    // Generate drop sound (lower thud)
+    std::vector<sf::Int16> dropSamples(SAMPLES);
+    for (unsigned i = 0; i < SAMPLES; i++) {
+        float time = static_cast<float>(i) / SAMPLE_RATE;
+        float amplitude = 5000.0f * std::exp(-time * 15.0f);
+        dropSamples[i] = static_cast<sf::Int16>(amplitude * std::sin(2 * 3.1415 * 200 * time));
+    }
+    dropBuffer.loadFromSamples(dropSamples.data(), dropSamples.size(), 1, SAMPLE_RATE);
+    dropSound.setBuffer(dropBuffer);
+
+    // Generate line clear sound (pleasant chime)
+    const unsigned LINE_SAMPLES = SAMPLE_RATE / 2; // 0.5 second
+    std::vector<sf::Int16> lineSamples(LINE_SAMPLES);
+    for (unsigned i = 0; i < LINE_SAMPLES; i++) {
+        float time = static_cast<float>(i) / SAMPLE_RATE;
+        float amplitude = 4000.0f * std::exp(-time * 3.0f);
+        float freq1 = 523.25f; // C5
+        float freq2 = 659.25f; // E5
+        float freq3 = 783.99f; // G5
+        lineSamples[i] = static_cast<sf::Int16>(amplitude * (
+            std::sin(2 * 3.1415 * freq1 * time) +
+            std::sin(2 * 3.1415 * freq2 * time) +
+            std::sin(2 * 3.1415 * freq3 * time)
+            ) / 3.0f);
+    }
+    lineClearBuffer.loadFromSamples(lineSamples.data(), lineSamples.size(), 1, SAMPLE_RATE);
+    lineClearSound.setBuffer(lineClearBuffer);
+
+    // Generate game over sound (descending tones)
+    const unsigned GAME_OVER_SAMPLES = SAMPLE_RATE; // 1 second
+    std::vector<sf::Int16> gameOverSamples(GAME_OVER_SAMPLES);
+    for (unsigned i = 0; i < GAME_OVER_SAMPLES; i++) {
+        float time = static_cast<float>(i) / SAMPLE_RATE;
+        float freq = 440.0f * std::exp(-time * 2.0f); // Descending frequency
+        float amplitude = 4000.0f * std::exp(-time * 2.0f);
+        gameOverSamples[i] = static_cast<sf::Int16>(amplitude * std::sin(2 * 3.1415 * freq * time));
+    }
+    gameOverBuffer.loadFromSamples(gameOverSamples.data(), gameOverSamples.size(), 1, SAMPLE_RATE);
+    gameOverSound.setBuffer(gameOverBuffer);
+
+    // Generate level up sound (ascending chime)
+    std::vector<sf::Int16> levelUpSamples(LINE_SAMPLES);
+    for (unsigned i = 0; i < LINE_SAMPLES; i++) {
+        float time = static_cast<float>(i) / SAMPLE_RATE;
+        float amplitude = 4000.0f * std::exp(-time * 2.0f);
+        float freq = 440.0f + time * 880.0f; // Ascending frequency
+        levelUpSamples[i] = static_cast<sf::Int16>(amplitude * std::sin(2 * 3.1415 * freq * time));
+    }
+    levelUpBuffer.loadFromSamples(levelUpSamples.data(), levelUpSamples.size(), 1, SAMPLE_RATE);
+    levelUpSound.setBuffer(levelUpBuffer);
+
+    std::cout << "Generated synthetic sound effects successfully." << std::endl;
+}
+
+/**
+ * Play a sound effect if audio is enabled
+ */
+void Tetris::playSound(sf::Sound& sound) {
+    if (soundEnabled) {
+        sound.play();
+    }
 }
 
 /**
@@ -146,6 +320,7 @@ void Tetris::spawnNewPiece() {
     // Check if spawn position is blocked (game over condition)
     if (!isValidPosition(currentX, currentY, currentPiece)) {
         gameOver = true;
+        playSound(gameOverSound);
     }
 }
 
@@ -191,6 +366,9 @@ void Tetris::placePiece() {
             }
         }
     }
+
+    // Play drop sound when piece is placed
+    playSound(dropSound);
 }
 
 /**
@@ -198,6 +376,7 @@ void Tetris::placePiece() {
  */
 void Tetris::clearLines() {
     int clearedCount = 0;
+    int previousLevel = level;
 
     // Scan from bottom to top for complete lines
     for (int y = BOARD_HEIGHT - 1; y >= 0; y--) {
@@ -232,6 +411,16 @@ void Tetris::clearLines() {
 
         // Increase drop speed with level (minimum 50ms interval)
         dropInterval = std::max(50.0f, 500.0f - (level - 1) * 50.0f);
+
+        // Play appropriate sound effects
+        playSound(lineClearSound);
+
+        // Play level up sound if level increased
+        if (level > previousLevel) {
+            // Small delay before level up sound
+            sf::sleep(sf::milliseconds(200));
+            playSound(levelUpSound);
+        }
     }
 }
 
@@ -270,6 +459,7 @@ void Tetris::handleInput() {
                 // Move piece left if possible
                 if (isValidPosition(currentX - 1, currentY, currentPiece)) {
                     currentX--;
+                    playSound(moveSound);
                 }
                 break;
 
@@ -277,6 +467,7 @@ void Tetris::handleInput() {
                 // Move piece right if possible
                 if (isValidPosition(currentX + 1, currentY, currentPiece)) {
                     currentX++;
+                    playSound(moveSound);
                 }
                 break;
 
@@ -285,6 +476,7 @@ void Tetris::handleInput() {
                 if (isValidPosition(currentX, currentY + 1, currentPiece)) {
                     currentY++;
                     score += 1;  // Small bonus for manual dropping
+                    playSound(moveSound);
                 }
                 break;
 
@@ -294,6 +486,7 @@ void Tetris::handleInput() {
                 auto rotated = rotatePiece(currentPiece);
                 if (isValidPosition(currentX, currentY, rotated)) {
                     currentPiece = rotated;
+                    playSound(rotateSound);
                 }
             }
             break;
@@ -304,6 +497,13 @@ void Tetris::handleInput() {
                     currentY++;
                     score += 2;  // Higher bonus for hard drop
                 }
+                playSound(dropSound);
+                break;
+
+            case sf::Keyboard::M:
+                // Toggle sound on/off
+                soundEnabled = !soundEnabled;
+                std::cout << "Sound " << (soundEnabled ? "enabled" : "disabled") << std::endl;
                 break;
             }
         }
@@ -399,6 +599,24 @@ void Tetris::render() {
     levelText.setString("Level: " + std::to_string(level));
     window.draw(scoreText);
     window.draw(levelText);
+
+    // Draw sound status
+    sf::Text soundStatusText;
+    soundStatusText.setFont(font);
+    soundStatusText.setCharacterSize(16);
+    soundStatusText.setFillColor(soundEnabled ? sf::Color::Green : sf::Color::Red);
+    soundStatusText.setString("Sound: " + std::string(soundEnabled ? "ON" : "OFF"));
+    soundStatusText.setPosition(BOARD_WIDTH * BLOCK_SIZE + 10, 70);
+    window.draw(soundStatusText);
+
+    // Draw controls help
+    sf::Text controlsText;
+    controlsText.setFont(font);
+    controlsText.setCharacterSize(14);
+    controlsText.setFillColor(sf::Color::White);
+    controlsText.setString("Controls:\nArrows: Move\nUp: Rotate\nSpace: Hard Drop\nM: Toggle Sound");
+    controlsText.setPosition(BOARD_WIDTH * BLOCK_SIZE + 10, 100);
+    window.draw(controlsText);
 
     // Draw game over screen if applicable
     if (gameOver) {
