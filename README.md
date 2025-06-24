@@ -394,6 +394,7 @@ class Tetris {
 ## 📦 Release Notes
 
 ### Latest Release Features
+- ✅ **Added Sound Effects**: Now 50% Less Boring!
 - ✅ **No Installation Required**: Just download and play!
 - ✅ **All Dependencies Included**: SFML libraries bundled
 - ✅ **Font Included**: No need to find arial.ttf
